@@ -22,9 +22,20 @@ with sqlite3.connect(database) as d:
 def create_expense(date,amount,category,subcategory,note):
      "add a new expense to the database"
      with sqlite3.connect(database) as d:
-          result=d.execute("""
+          result=d.execute(
                "INSERT INTO expenses(date, amount, category, subcategory, note) VALUES (?,?,?,?,?)",
                (date, amount, category, subcategory, note)
-          """)
+          )
      return {"status":"ok" , "id":result.lastrowid}
 
+@mcp.tool
+def list_expenses(start_date, end_date):
+     "list all expenses for the given time period"
+     with sqlite3.connect(database) as d:
+          result=d.execute("""
+               select date, amount, category, subcategory, note from expenses 
+               where date between ? and ? 
+               orderby id asc
+          """,(start_date, end_date))
+     cols = [d[0] for d in result.description]
+     return [dict(zip(cols, r)) for r in result.fetchall()]
