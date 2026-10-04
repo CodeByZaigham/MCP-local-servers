@@ -5,6 +5,7 @@ import sqlite3
 mcp=FastMCP(name="expense tracking server")
 
 database=os.path.join(os.path.dirname(__file__),"expenses.db")
+CATEGORIES=os.path.join(os.path.dirname(__file__),"categories.json")
 
 with sqlite3.connect(database) as d:
      d.execute("""
@@ -42,7 +43,7 @@ def list_expenses(start_date, end_date):
 
 @mcp.tool
 def summarize(start_date, end_date,category=None):
-     "summarize all expenses done it a given time period"
+     "summarize all expenses done in a given time period"
      query="select category , sum(amount) from expenses where date between ? and ? orderby category asc"
      params=[start_date, end_date]
      if category:
@@ -53,4 +54,13 @@ def summarize(start_date, end_date,category=None):
           result=d.execute(query,params)
      cols = [d[0] for d in result.description]
      return [dict(zip(cols, r)) for r in result.fetchall()]
+
+@mcp.resource("expense://categories",mime_type="application/json")
+def categories():
+     "read categories and sub categories of expenses"
+     with open(CATEGORIES,"r") as f:
+          return f.read()
+
+if __name__ == "__main__":
+     mcp.run()
 
