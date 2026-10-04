@@ -19,5 +19,12 @@ with sqlite3.connect(database) as d:
      """)
 
 @mcp.tool
-def create_expense():
-     pass
+def create_expense(date,amount,category,subcategory,note):
+     "add a new expense to the database"
+     with sqlite3.connect(database) as d:
+          result=d.execute("""
+               "INSERT INTO expenses(date, amount, category, subcategory, note) VALUES (?,?,?,?,?)",
+               (date, amount, category, subcategory, note)
+          """)
+     return {"status":"ok" , "id":result.lastrowid}
+
